@@ -30,7 +30,7 @@ const removeContact = async (contactId) => {
   if (!~idx) {
     return null;
   }
-  const removedContact = contacts.splice(idx, 1);
+  const [removedContact] = contacts.splice(idx, 1);
   await writeData(contacts);
   return removedContact;
 };

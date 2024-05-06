@@ -30,6 +30,7 @@ const updateContactSchema = Joi.object({
       'string.pattern.base':
         'You should enter a phone number in pattern: "(012) 345-6789" or "+789(012) 345-67-89" or a short number for an emergency. You can exclude hyphens, spaces and parentheses.',
     }),
+  favorite: Joi.boolean(),
 })
   .min(1)
   .message('Body must have at least one field');

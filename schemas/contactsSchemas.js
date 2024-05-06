@@ -12,11 +12,12 @@ const createContactSchema = Joi.object({
     .required()
     .messages({
       'string.pattern.base':
-        'You shold enter a phone number in pattern: "(012) 345-6789" or "+789(012) 345-67-89" or a short number for an emergency. You can exclude hyphens, spaces and parentheses.',
+        'You should enter a phone number in pattern: "(012) 345-6789" or "+789(012) 345-67-89" or a short number for an emergency. You can exclude hyphens, spaces and parentheses.',
     }),
+  favorite: Joi.boolean(),
 });
 
- const updateContactSchema = Joi.object({
+const updateContactSchema = Joi.object({
   name: Joi.string().min(3).max(50),
   email: Joi.string().email(),
   phone: Joi.string()
@@ -27,10 +28,19 @@ const createContactSchema = Joi.object({
     )
     .messages({
       'string.pattern.base':
-        'You shold enter a phone number in pattern: "(012) 345-6789" or "+789(012) 345-67-89" or a short number for an emergency. You can exclude hyphens, spaces and parentheses.',
+        'You should enter a phone number in pattern: "(012) 345-6789" or "+789(012) 345-67-89" or a short number for an emergency. You can exclude hyphens, spaces and parentheses.',
     }),
+  favorite: Joi.boolean(),
 })
   .min(1)
   .message('Body must have at least one field');
 
-  export default { createContactSchema, updateContactSchema };
+const updateStatusSchema = Joi.object({
+  favorite: Joi.boolean().required(),
+});
+
+export default {
+  createContactSchema,
+  updateContactSchema,
+  updateStatusSchema,
+};

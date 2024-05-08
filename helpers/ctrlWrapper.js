@@ -1,4 +1,4 @@
-const controllerWrapper = (controller) => {
+const ctrlWrapper = (controller) => {
   const wrapper = async (req, res, next) => {
     try {
       await controller(req, res, next);
@@ -9,4 +9,4 @@ const controllerWrapper = (controller) => {
   return wrapper;
 };
 
-export default controllerWrapper;
+export default ctrlWrapper;

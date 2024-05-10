@@ -2,9 +2,8 @@
   "name": "goit-node-rest-api",
   "type": "module",
   "scripts": {
-    "prod": "node app.js",
-    "start": "node -r dotenv/config ./app.js",
-    "dev": "nodemon -r dotenv/config ./app.js"
+    "start": "node ./app.js",
+    "dev": "nodemon ./app.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

@@ -3,7 +3,7 @@ import User from '../models/userModel.js';
 import HttpError from '../helpers/HttpError.js';
 import ctrlWrapper from '../helpers/ctrlWrapper.js';
 
-const { SECRET_KEY } = process.env;
+const {JWT_SECRET_KEY } = process.env;
 
 const register = async (req, res, next) => {
   const { email, password } = req.body;
@@ -13,7 +13,6 @@ const register = async (req, res, next) => {
     throw HttpError(409, 'Email in use');
   }
   const newUser = new User({ email });
-
   newUser.hashPassword(password);
   newUser.save();
   res.status(201).send({
@@ -34,7 +33,7 @@ const login = async (req, res, next) => {
   const payload = {
     id: user._id,
   };
-  const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1d' });
+  const token = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: '1d' });
   await User.findByIdAndUpdate(user._id, { token });
   res.send({
     user: {

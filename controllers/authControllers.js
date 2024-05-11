@@ -2,19 +2,21 @@ import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 import HttpError from '../helpers/HttpError.js';
 import ctrlWrapper from '../helpers/ctrlWrapper.js';
+import bcryptjs from 'bcryptjs';
 
-const {JWT_SECRET_KEY } = process.env;
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 const register = async (req, res, next) => {
   const { email, password } = req.body;
-  const emailInLowerCase = email.toLowerCase();
-  const isEmailInUse = await User.findOne({ email: emailInLowerCase });
+  const isEmailInUse = await User.findOne({ email: email.toLowerCase() });
   if (isEmailInUse !== null) {
     throw HttpError(409, 'Email in use');
   }
-  const newUser = new User({ email });
-  newUser.hashPassword(password);
-  newUser.save();
+  const hashPassword = await bcryptjs.hash(password, 10);
+  const newUser = await User.create({
+    email: email.toLowerCase(),
+    password: hashPassword,
+  });
   res.status(201).send({
     user: {
       email: newUser.email,
@@ -25,9 +27,12 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   const { email, password } = req.body;
-  const emailInLowerCase = email.toLowerCase();
-  const user = await User.findOne({ email: emailInLowerCase });
-  if (!user || !user.comparePassword(password)) {
+  const user = await User.findOne({ email: email.toLowerCase() });
+  if (user === null) {
+    throw HttpError(401, 'Email or password is wrong');
+  }
+  const comparePassword = await bcryptjs.compare(password, user.password);
+  if (comparePassword === false) {
     throw HttpError(401, 'Email or password is wrong');
   }
   const payload = {
@@ -39,7 +44,6 @@ const login = async (req, res, next) => {
     user: {
       email: user.email,
       subscription: user.subscription,
-      token,
     },
   });
 };

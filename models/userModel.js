@@ -1,5 +1,4 @@
 import { Schema, model } from 'mongoose';
-import bcryptjs from 'bcryptjs';
 import handleMongooseError from '../helpers/handleMongooseError.js';
 import { emailRegexp } from '../helpers/regexps.js';
 
@@ -28,14 +27,6 @@ const userSchema = new Schema(
   },
   { versionKey: false, timestamps: true }
 );
-
-userSchema.methods.hashPassword = function (password) {
-  this.password = bcryptjs.hashSync(password, bcryptjs.genSaltSync(10));
-};
-
-userSchema.methods.comparePassword = function (password) {
-  return bcryptjs.compareSync(password, this.password);
-};
 
 userSchema.post('save', handleMongooseError);
 

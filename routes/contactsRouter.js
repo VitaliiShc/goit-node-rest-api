@@ -11,26 +11,30 @@ const { createContactSchema, updateContactSchema, updateContactStatusSchema } =
 const contactsRouter = express.Router();
 contactsRouter.use(authenticate);
 
-contactsRouter.get('/', ctrl.getAllContacts);
+contactsRouter.get('/contacts', ctrl.getAllContacts);
 
-contactsRouter.post('/', validateBody(createContactSchema), ctrl.createContact);
+contactsRouter.post(
+  '/contacts',
+  validateBody(createContactSchema),
+  ctrl.createContact
+);
 
-contactsRouter.get('/:id', isValidId, ctrl.getOneContact);
+contactsRouter.get('/contacts/:id', isValidId, ctrl.getOneContact);
 
 contactsRouter.put(
-  '/:id',
+  '/contacts/:id',
   isValidId,
   validateBody(updateContactSchema),
   ctrl.updateContact
 );
 
 contactsRouter.patch(
-  '/:id/favorite',
+  '/contacts/:id/favorite',
   isValidId,
   validateBody(updateContactStatusSchema),
   ctrl.updateContact
 );
 
-contactsRouter.delete('/:id', isValidId, ctrl.deleteContact);
+contactsRouter.delete('/contacts/:id', isValidId, ctrl.deleteContact);
 
 export default contactsRouter;

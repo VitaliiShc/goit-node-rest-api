@@ -4,15 +4,22 @@ import ctrlWrapper from '../helpers/ctrlWrapper.js';
 
 const getAllContacts = async (req, res, next) => {
   const { _id: owner } = req.user;
-  const { page = 1, limit = 3 } = req.query;
-  const skip = (page - 1) * limit;
+  const { page = 1, limit = 20 } = req.query;
   const filter =
     req.query.favorite === '' ? { owner, favorite: true } : { owner };
-  const contacts = await Contact.find(filter, '-createdAt -updatedAt -owner', {
-    skip,
-    limit,
+  const contacts = await Contact.find(filter, '-createdAt -updatedAt -owner');
+  const total = contacts.length;
+  const skip = (page - 1) * limit;
+  const pages = Math.ceil(total / limit);
+  const response = contacts.splice(skip, limit);
+  const YourPlaceInContactBook =
+    req.query.favorite === ''
+      ? `Page ${page} of ${pages}. Total ${total} FAVORITE contacts.`
+      : `Page ${page} of ${pages}. Total ${total} contacts.`;
+  res.send({
+    'Your Place In Your ContactBook': YourPlaceInContactBook,
+    contacts: response,
   });
-  res.send(contacts);
 };
 
 const createContact = async (req, res, next) => {

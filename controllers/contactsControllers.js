@@ -4,7 +4,7 @@ import ctrlWrapper from '../helpers/ctrlWrapper.js';
 
 const getAllContacts = async (req, res, next) => {
   const { _id: owner } = req.user;
-  const { page = 1, limit = 3 } = req.query;
+  const { page = 1, limit = 10 } = req.query;
   const filter =
     req.query.favorite === '' ? { owner, favorite: true } : { owner };
   const contacts = await Contact.find(filter, '-createdAt -updatedAt -owner');

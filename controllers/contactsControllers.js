@@ -1,53 +1,98 @@
 import Contact from '../models/contactModel.js';
 import HttpError from '../helpers/HttpError.js';
-import controllerWrapper from '../helpers/controllerWrapper.js';
+import ctrlWrapper from '../helpers/ctrlWrapper.js';
 
 const getAllContacts = async (req, res, next) => {
-  const result = await Contact.find({}, '-createdAt -updatedAt');
-  res.send(result);
+  const { _id: owner } = req.user;
+  const { page = 1, limit = 10 } = req.query;
+  const filter =
+    req.query.favorite === '' ? { owner, favorite: true } : { owner };
+  const contacts = await Contact.find(filter, '-createdAt -updatedAt -owner');
+  const total = contacts.length;
+  let pages = Math.ceil(total / limit);
+  let currentPage = page;
+  let skip = (page - 1) * limit;
+  if (page > pages) {
+    skip = (pages - 1) * limit;
+    currentPage = pages;
+  }
+  const response = contacts.splice(skip, limit);
+  const YourPlaceInContactBook =
+    req.query.favorite === ''
+      ? `Page ${currentPage} of ${pages}. Total ${total} FAVORITE contacts.`
+      : `Page ${currentPage} of ${pages}. Total ${total} contacts.`;
+  res.send({
+    'Your Place In Your ContactBook': YourPlaceInContactBook,
+    contacts: response,
+  });
 };
 
 const createContact = async (req, res, next) => {
-  const result = await Contact.create(req.body);
-  res.status(201).send(result);
+  const { _id: owner } = req.user;
+  const result = await Contact.create({ ...req.body, owner });
+  res.status(201).send({
+    id: result._id,
+    name: result.name,
+    email: result.email,
+    phone: result.phone,
+    favorite: result.favorite,
+  });
 };
 
 const getOneContact = async (req, res, next) => {
   const { id } = req.params;
-  const result = await Contact.findById(id, '-createdAt -updatedAt');
+  const { _id: owner } = req.user;
+  const result = await Contact.findOne({ _id: id, owner });
   if (!result) {
     throw HttpError(404);
   }
-  res.send(result);
+  res.send({
+    id: result._id,
+    name: result.name,
+    email: result.email,
+    phone: result.phone,
+    favorite: result.favorite,
+  });
 };
 
 const updateContact = async (req, res, next) => {
   const { id } = req.params;
-  const result = await Contact.findByIdAndUpdate(id, req.body, {
+  const { _id: owner } = req.user;
+  const result = await Contact.findOneAndUpdate({ _id: id, owner }, req.body, {
     new: true,
-    select: '-createdAt -updatedAt',
   });
   if (!result) {
     throw HttpError(404);
   }
-  res.send(result);
+  res.send({
+    id: result._id,
+    name: result.name,
+    email: result.email,
+    phone: result.phone,
+    favorite: result.favorite,
+  });
 };
 
 const deleteContact = async (req, res, next) => {
   const { id } = req.params;
-  const result = await Contact.findByIdAndDelete(id, {
-    select: '-createdAt -updatedAt',
-  });
+  const { _id: owner } = req.user;
+  const result = await Contact.findOneAndDelete({ _id: id, owner });
   if (!result) {
     throw HttpError(404);
   }
-  res.send(result);
+  res.send({
+    id: result._id,
+    name: result.name,
+    email: result.email,
+    phone: result.phone,
+    favorite: result.favorite,
+  });
 };
 
 export default {
-  getAllContacts: controllerWrapper(getAllContacts),
-  createContact: controllerWrapper(createContact),
-  getOneContact: controllerWrapper(getOneContact),
-  updateContact: controllerWrapper(updateContact),
-  deleteContact: controllerWrapper(deleteContact),
+  getAllContacts: ctrlWrapper(getAllContacts),
+  createContact: ctrlWrapper(createContact),
+  getOneContact: ctrlWrapper(getOneContact),
+  updateContact: ctrlWrapper(updateContact),
+  deleteContact: ctrlWrapper(deleteContact),
 };

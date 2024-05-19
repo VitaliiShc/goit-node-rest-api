@@ -5,16 +5,17 @@ import Jimp from 'jimp';
 import User from '../models/userModel.js';
 import HttpError from '../helpers/HttpError.js';
 
-const getCurrent = async (req, res, next) => {
+async function getCurrent(req, res, next) {
   const { email, subscription, avatarURL } = req.user;
+
   res.send({
     email,
     subscription,
     avatarURL,
   });
-};
+}
 
-const updateSubscription = async (req, res, next) => {
+async function updateSubscription(req, res, next) {
   const user = await User.findOneAndUpdate(
     req.user._id,
     { subscription: req.body.subscription },
@@ -23,14 +24,15 @@ const updateSubscription = async (req, res, next) => {
   if (!user) {
     throw HttpError(404);
   }
+
   res.send({
     email: user.email,
     subscription: user.subscription,
     avatarURL: user.avatarURL,
   });
-};
+}
 
-const updateAvatar = async (req, res, next) => {
+async function updateAvatar(req, res, next) {
   const img = await Jimp.read(req.file.path);
   await img
     .autocrop()
@@ -51,8 +53,9 @@ const updateAvatar = async (req, res, next) => {
   if (!user) {
     throw HttpError(404);
   }
+
   res.send({ avatarURL: user.avatarURL });
-};
+}
 
 export default {
   getCurrent,

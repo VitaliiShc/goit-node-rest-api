@@ -1,34 +1,36 @@
 import express from 'express';
-import validateBody from '../middlewares/validateBody.js';
 import usersSchemas from '../schemas/usersSchemas.js';
-import ctrl from '../controllers/index.js';
-import authenticate from '../middlewares/authenticate.js';
-import upload from '../middlewares/upload.js';
+import mdwrs from '../middlewares/index.js';
+import ctrls from '../controllers/index.js';
 
 const { registerSchema, loginSchema, updateSubscriptionSchema } = usersSchemas;
 
 const authRouter = express.Router();
 
-authRouter.post('/register', validateBody(registerSchema), ctrl.register);
+authRouter.post(
+  '/register',
+  mdwrs.validateBody(registerSchema),
+  ctrls.register
+);
 
-authRouter.post('/login', validateBody(loginSchema), ctrl.login);
+authRouter.post('/login', mdwrs.validateBody(loginSchema), ctrls.login);
 
-authRouter.get('/current', authenticate, ctrl.getCurrent);
+authRouter.get('/current', mdwrs.authenticate, ctrls.getCurrent);
 
 authRouter.patch(
   '/',
-  validateBody(updateSubscriptionSchema),
-  authenticate,
-  ctrl.updateSubscription
+  mdwrs.validateBody(updateSubscriptionSchema),
+  mdwrs.authenticate,
+  ctrls.updateSubscription
 );
 
 authRouter.patch(
   '/avatars',
-  authenticate,
-  upload.single('avatar'),
-  ctrl.updateAvatar
+  mdwrs.authenticate,
+  mdwrs.upload.single('avatar'),
+  ctrls.updateAvatar
 );
 
-authRouter.post('/logout', authenticate, ctrl.logout);
+authRouter.post('/logout', mdwrs.authenticate, ctrls.logout);
 
 export default authRouter;

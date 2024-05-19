@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import gravatar from 'gravatar';
 import handleMongooseError from '../helpers/handleMongooseError.js';
 import { emailRegexp } from '../helpers/regexps.js';
 
@@ -19,6 +20,12 @@ const userSchema = new Schema(
       type: String,
       enum: ['starter', 'pro', 'business'],
       default: 'starter',
+    },
+    avatarURL: {
+      type: String,
+      default: function () {
+        return gravatar.url(this.email, { s: 250 }, true);
+      },
     },
     token: {
       type: String,

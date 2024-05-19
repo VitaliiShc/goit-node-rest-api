@@ -1,7 +1,7 @@
 import express from 'express';
 import validateBody from '../middlewares/validateBody.js';
 import contactsSchemas from '../schemas/contactsSchemas.js';
-import ctrl from '../controllers/contactsControllers.js';
+import ctrl from '../controllers/index.js';
 import isValidId from '../middlewares/isValidId.js';
 import authenticate from '../middlewares/authenticate.js';
 

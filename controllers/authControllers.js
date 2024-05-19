@@ -1,8 +1,7 @@
 import jwt from 'jsonwebtoken';
+import bcryptjs from 'bcryptjs';
 import User from '../models/userModel.js';
 import HttpError from '../helpers/HttpError.js';
-import ctrlWrapper from '../helpers/ctrlWrapper.js';
-import bcryptjs from 'bcryptjs';
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
@@ -13,6 +12,7 @@ const register = async (req, res, next) => {
     throw HttpError(409, 'Email in use');
   }
   const hashPassword = await bcryptjs.hash(password, 10);
+
   const newUser = await User.create({
     email: email.toLowerCase(),
     password: hashPassword,
@@ -21,6 +21,7 @@ const register = async (req, res, next) => {
     user: {
       email: newUser.email,
       subscription: newUser.subscription,
+      avatarURL: newUser.avatarURL,
     },
   });
 };
@@ -55,37 +56,8 @@ const logout = async (req, res, next) => {
   res.status(204).send();
 };
 
-const getCurrent = async (req, res, next) => {
-  const { email, subscription } = req.user;
-  res.send({
-    email,
-    subscription,
-  });
-};
-
-const updateSubscription = async (req, res, next) => {
-  const { _id } = req.user;
-  const { subscription } = req.body;
-  const result = await User.findOneAndUpdate(
-    _id,
-    { subscription },
-    {
-      new: true,
-    }
-  );
-  if (!result) {
-    throw HttpError(404);
-  }
-  res.send({
-    email: result.email,
-    subscription: result.subscription,
-  });
-};
-
 export default {
-  register: ctrlWrapper(register),
-  login: ctrlWrapper(login),
-  logout: ctrlWrapper(logout),
-  getCurrent: ctrlWrapper(getCurrent),
-  updateSubscription: ctrlWrapper(updateSubscription),
+  register,
+  login,
+  logout,
 };

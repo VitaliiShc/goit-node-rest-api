@@ -11,7 +11,6 @@ async function getCurrent(req, res, next) {
   res.send({
     email,
     subscription,
-    avatarURL,
   });
 }
 
@@ -28,7 +27,6 @@ async function updateSubscription(req, res, next) {
   res.send({
     email: user.email,
     subscription: user.subscription,
-    avatarURL: user.avatarURL,
   });
 }
 

@@ -10,10 +10,12 @@ const authenticate = async (req, res, next) => {
     if (typeof authorization === undefined) {
       throw error;
     }
+
     const [bearer, token] = authorization.split(' ');
     if (bearer !== 'Bearer') {
       throw error;
     }
+
     const { id } = jwt.verify(token, JWT_SECRET_KEY);
     const user = await User.findById(id);
     if (!user || !user.token || user.token !== token) {

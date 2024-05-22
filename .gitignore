@@ -1,9 +1,15 @@
-# notes
+# NotesDev
 .notes/
 
 .idea
 .vscode
 .DS_Store
+
+# TempProd
+tmp/*
+!tmp/.gitkeep
+public/avatars/*
+!public/avatars/.gitkeep
 
 # Logs
 logs

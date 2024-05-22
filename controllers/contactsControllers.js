@@ -1,13 +1,25 @@
 import Contact from '../models/contactModel.js';
 import HttpError from '../helpers/HttpError.js';
-import ctrlWrapper from '../helpers/ctrlWrapper.js';
 
-const getAllContacts = async (req, res, next) => {
+const resultOneContactObj = (result) => {
+  return {
+    id: result._id,
+    name: result.name,
+    email: result.email,
+    phone: result.phone,
+    favorite: result.favorite,
+  };
+};
+
+async function getAllContacts(req, res, next) {
   const { _id: owner } = req.user;
   const { page = 1, limit = 10 } = req.query;
+
   const filter =
     req.query.favorite === '' ? { owner, favorite: true } : { owner };
+  
   const contacts = await Contact.find(filter, '-createdAt -updatedAt -owner');
+
   const total = contacts.length;
   let pages = Math.ceil(total / limit);
   let currentPage = page;
@@ -16,46 +28,39 @@ const getAllContacts = async (req, res, next) => {
     skip = (pages - 1) * limit;
     currentPage = pages;
   }
-  const response = contacts.splice(skip, limit);
+
   const YourPlaceInContactBook =
     req.query.favorite === ''
       ? `Page ${currentPage} of ${pages}. Total ${total} FAVORITE contacts.`
       : `Page ${currentPage} of ${pages}. Total ${total} contacts.`;
-  res.send({
-    'Your Place In Your ContactBook': YourPlaceInContactBook,
-    contacts: response,
-  });
-};
+  
+  const result = contacts.splice(skip, limit);
 
-const createContact = async (req, res, next) => {
+
+
+  res.send({
+    'You Are Here 🌐': YourPlaceInContactBook,
+    contacts: result,
+  });
+}
+
+async function createContact(req, res, next) {
   const { _id: owner } = req.user;
   const result = await Contact.create({ ...req.body, owner });
-  res.status(201).send({
-    id: result._id,
-    name: result.name,
-    email: result.email,
-    phone: result.phone,
-    favorite: result.favorite,
-  });
-};
+  res.status(201).send(resultOneContactObj(result));
+}
 
-const getOneContact = async (req, res, next) => {
+async function getOneContact(req, res, next) {
   const { id } = req.params;
   const { _id: owner } = req.user;
   const result = await Contact.findOne({ _id: id, owner });
   if (!result) {
     throw HttpError(404);
   }
-  res.send({
-    id: result._id,
-    name: result.name,
-    email: result.email,
-    phone: result.phone,
-    favorite: result.favorite,
-  });
-};
+  res.send(resultOneContactObj(result));
+}
 
-const updateContact = async (req, res, next) => {
+async function updateContact(req, res, next) {
   const { id } = req.params;
   const { _id: owner } = req.user;
   const result = await Contact.findOneAndUpdate({ _id: id, owner }, req.body, {
@@ -64,35 +69,23 @@ const updateContact = async (req, res, next) => {
   if (!result) {
     throw HttpError(404);
   }
-  res.send({
-    id: result._id,
-    name: result.name,
-    email: result.email,
-    phone: result.phone,
-    favorite: result.favorite,
-  });
-};
+  res.send(resultOneContactObj(result));
+}
 
-const deleteContact = async (req, res, next) => {
+async function deleteContact(req, res, next) {
   const { id } = req.params;
   const { _id: owner } = req.user;
   const result = await Contact.findOneAndDelete({ _id: id, owner });
   if (!result) {
     throw HttpError(404);
   }
-  res.send({
-    id: result._id,
-    name: result.name,
-    email: result.email,
-    phone: result.phone,
-    favorite: result.favorite,
-  });
-};
+  res.send(resultOneContactObj(result));
+}
 
 export default {
-  getAllContacts: ctrlWrapper(getAllContacts),
-  createContact: ctrlWrapper(createContact),
-  getOneContact: ctrlWrapper(getOneContact),
-  updateContact: ctrlWrapper(updateContact),
-  deleteContact: ctrlWrapper(deleteContact),
+  getAllContacts,
+  createContact,
+  getOneContact,
+  updateContact,
+  deleteContact,
 };

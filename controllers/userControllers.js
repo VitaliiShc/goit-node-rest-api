@@ -31,6 +31,10 @@ async function updateSubscription(req, res, next) {
 }
 
 async function updateAvatar(req, res, next) {
+  if (!req.file) {
+    throw HttpError(400, 'Please select the avatar file');
+  }
+
   const img = await Jimp.read(req.file.path);
   await img
     .autocrop()

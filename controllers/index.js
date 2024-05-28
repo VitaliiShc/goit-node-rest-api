@@ -6,6 +6,8 @@ import contactsControllers from './contactsControllers.js';
 export default {
   // auth controllers
   register: ctrlWrapper(authControllers.register),
+  emailVerification: ctrlWrapper(authControllers.emailVerification),
+  resendVerifyEmail: ctrlWrapper(authControllers.resendVerifyEmail),
   login: ctrlWrapper(authControllers.login),
   logout: ctrlWrapper(authControllers.logout),
 

@@ -1,8 +1,8 @@
 import { Schema, model } from 'mongoose';
 import gravatar from 'gravatar';
-import { randomUUID } from 'node:crypto';
 import handleMongooseError from '../helpers/handleMongooseError.js';
 import { emailRegexp } from '../helpers/regexps.js';
+import { randomUUID } from 'node:crypto';
 
 const userSchema = new Schema(
   {

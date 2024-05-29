@@ -6,11 +6,10 @@ import sendEmail from '../helpers/sendEmailSendgrid.js';
 
 const verifyEmailBody = (user) => {
   const html = `
-    <p>Hi!</p></br>
     <p>You registered an account on ContactBook Application. Before being able to use your account you need to verify your email address.</p></br>
     <a target="_blank" href="${process.env.BASE_URL}/users/verify/${user.verificationToken}" rel="noopener noreferrer">Click to verify email</a>`;
   const text = `
-    Hi! You registered an account on ContactBook Application. Before being able to use your account you need to verify your email address. Click to verify email: ${process.env.BASE_URL}/users/verify/${user.verificationToken}`;
+    You registered an account on ContactBook Application. Before being able to use your account you need to verify your email address. Click to verify email: ${process.env.BASE_URL}/users/verify/${user.verificationToken}`;
 
   return {
     to: user.email,
@@ -53,15 +52,16 @@ async function register(req, res, next) {
 async function emailVerification(req, res, next) {
   const { verificationToken } = req.params;
 
-  const user = await User.findOne({ verificationToken });
+  const user = await User.findOneAndUpdate(
+    { verificationToken },
+    {
+      verify: true,
+      verificationToken: null,
+    }
+  );
   if (!user) {
     throw HttpError(404, 'User not found');
   }
-
-  await User.findByIdAndUpdate(user._id, {
-    verify: true,
-    verificationToken: null,
-  });
 
   res.send('Verification successful');
 }
@@ -92,22 +92,18 @@ async function login(req, res, next) {
     throw HttpError(401, 'Email or password is wrong');
   }
 
-  if (user.verify === false) {
+  if (!user.verify) {
     throw HttpError(401, 'Email not verified');
   }
 
   const comparePassword = await bcryptjs.compare(password, user.password);
-  if (comparePassword === false) {
+  if (!comparePassword) {
     throw HttpError(401, 'Email or password is wrong');
   }
 
-  const token = jwt.sign(
-    {
-      id: user._id,
-    },
-    process.env.JWT_SECRET_KEY,
-    { expiresIn: '1d' }
-  );
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
+    expiresIn: '1d',
+  });
 
   await User.findByIdAndUpdate(user._id, { token });
 

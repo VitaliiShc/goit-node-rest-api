@@ -63,7 +63,9 @@ async function emailVerification(req, res, next) {
     throw HttpError(404, 'User not found');
   }
 
-  res.send('Verification successful');
+  res.send({
+    message: 'Verification successful',
+  });
 }
 
 // Resent a verification email
@@ -80,7 +82,9 @@ async function resendVerifyEmail(req, res, next) {
 
   await sendEmail(verifyEmailBody(user));
 
-  res.send('Verification email sent');
+  res.send({
+    message: 'Verification email sent',
+  });
 }
 
 // User login

@@ -11,6 +11,15 @@ const registerSchema = Joi.object({
   password: Joi.string().min(8).required(),
 });
 
+const resendVerifyEmailSchema = Joi.object({
+  email: Joi.string()
+    .pattern(emailRegexp)
+    .messages({
+      'string.pattern.base': emailPatternValidateMsg,
+    })
+    .required(),
+});
+
 const loginSchema = Joi.object({
   email: Joi.string().required(),
   password: Joi.string().required(),
@@ -25,6 +34,7 @@ const updateSubscriptionSchema = Joi.object({
 
 export default {
   registerSchema,
+  resendVerifyEmailSchema,
   loginSchema,
   updateSubscriptionSchema,
 };

@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import gravatar from 'gravatar';
+import { randomUUID } from 'node:crypto';
 import handleMongooseError from '../helpers/handleMongooseError.js';
 import { emailRegexp } from '../helpers/regexps.js';
 
@@ -30,6 +31,15 @@ const userSchema = new Schema(
     token: {
       type: String,
       default: null,
+    },
+    verify: {
+      type: Boolean,
+      default: false,
+    },
+    verificationToken: {
+      type: String,
+      default: randomUUID(),
+      required: [true, 'Verify token is required'],
     },
   },
   { versionKey: false, timestamps: true }

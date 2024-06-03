@@ -11,13 +11,14 @@ const resultOneContactObj = (result) => {
   };
 };
 
+// Show all contacts
 async function getAllContacts(req, res, next) {
   const { _id: owner } = req.user;
   const { page = 1, limit = 10 } = req.query;
 
   const filter =
     req.query.favorite === '' ? { owner, favorite: true } : { owner };
-  
+
   const contacts = await Contact.find(filter, '-createdAt -updatedAt -owner');
 
   const total = contacts.length;
@@ -33,10 +34,8 @@ async function getAllContacts(req, res, next) {
     req.query.favorite === ''
       ? `Page ${currentPage} of ${pages}. Total ${total} FAVORITE contacts.`
       : `Page ${currentPage} of ${pages}. Total ${total} contacts.`;
-  
+
   const result = contacts.splice(skip, limit);
-
-
 
   res.send({
     'You Are Here 🌐': YourPlaceInContactBook,
@@ -44,12 +43,14 @@ async function getAllContacts(req, res, next) {
   });
 }
 
+// Create a contact
 async function createContact(req, res, next) {
   const { _id: owner } = req.user;
   const result = await Contact.create({ ...req.body, owner });
   res.status(201).send(resultOneContactObj(result));
 }
 
+// Show a contact's data by id
 async function getOneContact(req, res, next) {
   const { id } = req.params;
   const { _id: owner } = req.user;
@@ -60,6 +61,7 @@ async function getOneContact(req, res, next) {
   res.send(resultOneContactObj(result));
 }
 
+// Change a contact's data by id
 async function updateContact(req, res, next) {
   const { id } = req.params;
   const { _id: owner } = req.user;
@@ -72,6 +74,7 @@ async function updateContact(req, res, next) {
   res.send(resultOneContactObj(result));
 }
 
+// Delete a contact by id
 async function deleteContact(req, res, next) {
   const { id } = req.params;
   const { _id: owner } = req.user;

@@ -2,9 +2,24 @@ import jwt from 'jsonwebtoken';
 import bcryptjs from 'bcryptjs';
 import User from '../models/userModel.js';
 import HttpError from '../helpers/HttpError.js';
+import sendEmail from '../helpers/sendEmailSendgrid.js';
 
-const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
+const verifyEmailBody = (user) => {
+  const html = `
+    <p>You registered an account on ContactBook Application. Before being able to use your account you need to verify your email address.</p></br>
+    <a target="_blank" href="${process.env.BASE_URL}/users/verify/${user.verificationToken}" rel="noopener noreferrer">Click to verify email</a>`;
+  const text = `
+    You registered an account on ContactBook Application. Before being able to use your account you need to verify your email address. Click to verify email: ${process.env.BASE_URL}/users/verify/${user.verificationToken}`;
 
+  return {
+    to: user.email,
+    subject: 'Verify email',
+    html: html,
+    text: text,
+  };
+};
+
+// User registration
 async function register(req, res, next) {
   const { email, password } = req.body;
 
@@ -20,35 +35,79 @@ async function register(req, res, next) {
     password: hashPassword,
   });
 
+  await sendEmail(verifyEmailBody(newUser));
+
   res.status(201).send({
     user: {
       email: newUser.email,
       subscription: newUser.subscription,
       avatarURL: newUser.avatarURL,
     },
+    message:
+      'We just need to verify your email address before you can access. A verification email sent to your registration email',
   });
 }
 
+// Verification of user's email address
+async function emailVerification(req, res, next) {
+  const { verificationToken } = req.params;
+
+  const user = await User.findOneAndUpdate(
+    { verificationToken },
+    {
+      verify: true,
+      verificationToken: null,
+    }
+  );
+  if (!user) {
+    throw HttpError(404, 'User not found');
+  }
+
+  res.send({
+    message: 'Verification successful',
+  });
+}
+
+// Resent a verification email
+async function resendVerifyEmail(req, res, next) {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw HttpError(404, 'User not found');
+  }
+  if (user.verify) {
+    throw HttpError(400, 'Verification has already been passed');
+  }
+
+  await sendEmail(verifyEmailBody(user));
+
+  res.send({
+    message: 'Verification email sent',
+  });
+}
+
+// User login
 async function login(req, res, next) {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email: email.toLowerCase() });
-  if (user === null) {
+  if (!user) {
     throw HttpError(401, 'Email or password is wrong');
+  }
+
+  if (!user.verify) {
+    throw HttpError(401, 'Email not verified');
   }
 
   const comparePassword = await bcryptjs.compare(password, user.password);
-  if (comparePassword === false) {
+  if (!comparePassword) {
     throw HttpError(401, 'Email or password is wrong');
   }
 
-  const token = jwt.sign(
-    {
-      id: user._id,
-    },
-    JWT_SECRET_KEY,
-    { expiresIn: '1d' }
-  );
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
+    expiresIn: '1d',
+  });
 
   await User.findByIdAndUpdate(user._id, { token });
 
@@ -61,6 +120,7 @@ async function login(req, res, next) {
   });
 }
 
+// User logout
 async function logout(req, res, next) {
   const { _id } = req.user;
 
@@ -71,6 +131,8 @@ async function logout(req, res, next) {
 
 export default {
   register,
+  emailVerification,
+  resendVerifyEmail,
   login,
   logout,
 };

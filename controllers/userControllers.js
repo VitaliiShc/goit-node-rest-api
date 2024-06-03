@@ -5,6 +5,7 @@ import Jimp from 'jimp';
 import User from '../models/userModel.js';
 import HttpError from '../helpers/HttpError.js';
 
+// Show user's info
 async function getCurrent(req, res, next) {
   const { email, subscription, avatarURL } = req.user;
 
@@ -14,6 +15,7 @@ async function getCurrent(req, res, next) {
   });
 }
 
+// Change user's subscription status
 async function updateSubscription(req, res, next) {
   const user = await User.findOneAndUpdate(
     req.user._id,
@@ -30,7 +32,12 @@ async function updateSubscription(req, res, next) {
   });
 }
 
+// Change user's avatar
 async function updateAvatar(req, res, next) {
+  if (!req.file) {
+    throw HttpError(400, 'Please select the avatar file');
+  }
+
   const img = await Jimp.read(req.file.path);
   await img
     .autocrop()
